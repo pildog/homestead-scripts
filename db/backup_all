@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+source $(dirname "$0")/../lib.sh
+
+if [ ! -f $(dirname "$0")/../$CONFIG_FILE ]; then
+    echo -e "${RED}Config file not found.${NC} run 'cp config.sample config' to create one"
+    exit 0
+fi
+
+source $(dirname "$0")/../$CONFIG_FILE
+
+if [ ! -f $CREDENTIAL_PATH ]; then
+    echo -e "${RED}Can not find the credential file${NC} ($CREDENTIAL_PATH)"
+    exit 0
+fi
+
+if [ ! -d $BACKUP_PATH ]; then
+    echo -e "${RED}Backup directory doesn't exist${NC} Please map a backup folder in your Homestead.yaml ($BACKUP_PATH)"
+    exit 0
+fi
+
+# (-E, --extended-regexp     PATTERN is an extended regular expression) -v, --invert-match        select non-matching lines
+databases=`mysql --defaults-file="$CREDENTIAL_PATH" -e "SHOW DATABASES;" | grep -Ev "(Database|information_schema|performance_schema|sys|mysql)"`
+BACKUP_FOLDER="$BACKUP_PATH/$(date +"%Y-%m-%d-%H-%M-%S")"
+
+if [ -d $BACKUP_FOLDER ]; then
+    rm -rf $BACKUP_FOLDER
+else
+	mkdir $BACKUP_FOLDER
+fi
+
+for db in $databases; do
+	BACKUP_FILE="$BACKUP_FOLDER/${db}.gz"
+	/usr/bin/mysqldump --defaults-file="$CREDENTIAL_PATH" --databases $db | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | sed -e 's/DEFINER[ ]*=[ ]*[^*]*PROCEDURE/PROCEDURE/' | sed -e 's/DEFINER[ ]*=[ ]*[^*]*FUNCTION/FUNCTION/' | gzip > "$BACKUP_FILE"
+	echo -e "${GREEN}$BACKUP_FILE${NC}"
+done
+
+echo -e "${GREEN}Backup completed${NC}"
+exit 1

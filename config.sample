@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# path to the credential file for mysql
+CREDENTIAL_PATH="/home/vagrant/.my.cnf"
+
+# Where your DB backup will be saved
+BACKUP_PATH="/home/vagrant/backup"
+
+# mailcatcher smtp port
+SMTP_PORT="9999"
+
+# Defines the folder where the mailcatcher startup script will be saved
+SCRIPT_PATH="/home/vagrant/mailcatcher"

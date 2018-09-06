@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+source $(dirname "$0")/../lib.sh
+
+if [ ! -f $(dirname "$0")/../$CONFIG_FILE ]; then
+	echo -e "${RED}Config file not found.${NC} run 'cp config.sample config' to create one"
+	exit 0
+fi
+
+source $(dirname "$0")/../$CONFIG_FILE
+
+SCRIPT_NAME=$(basename "$0")
+
+if [ -z "$1" ]; then
+	echo "$SCRIPT_NAME [path to sql file] [database name]"
+	exit 1
+fi
+
+if [ ! -f $CREDENTIAL_PATH ]; then
+	echo -e "${RED}Can not find the credential file${NC} ($CREDENTIAL_PATH)"
+	exit 0
+fi
+
+if [ ! -d "$BACKUP_PATH" ]; then
+	echo -e "${RED}Backup directory doesn't exist${NC} Please map a backup folder in your Homestead.yaml ($BACKUP_PATH)"
+	exit 0
+fi
+
+if [ ! -f "$BACKUP_PATH/$1" ]; then
+	echo -e "${RED}Source file doesn't exist${NC} ($BACKUP_PATH/$1)"
+	exit 0
+fi
+
+if [ ! -z "$2" ]; then
+	RESULT=`mysqlshow --defaults-file="$CREDENTIAL_PATH" $2 | grep -v Wildcard | grep -o $2`
+	if [ "$RESULT" != "$2" ]; then
+		mysql --defaults-file="$CREDENTIAL_PATH" -e "CREATE DATABASE $2 DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci"
+	fi
+	mysql --defaults-file="$CREDENTIAL_PATH" $2 < "$BACKUP_PATH/$1"
+else
+	mysql --defaults-file="$CREDENTIAL_PATH" < "$BACKUP_PATH/$1"
+fi
+
+echo "Done"

@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+source $(dirname "$0")/../lib.sh
+
+if [ ! -f $(dirname "$0")/../$CONFIG_FILE ]; then
+    echo -e "${RED}Config file not found.${NC} run 'cp config.sample config' to create one"
+    exit 0
+fi
+
+source $(dirname "$0")/../$CONFIG_FILE
+
+START_SCRIPT_NAME="start_mailcatcher.sh"
+BOOTUP_SCRIPT_NAME="mailcatcher"
+
+START_SCRIPT_PATH="${SCRIPT_PATH}/$START_SCRIPT_NAME"
+BOOTUP_SCRIPT_PATH="${SCRIPT_PATH}/$BOOTUP_SCRIPT_NAME"
+VAGRANT_IP=$(eval "ifconfig eth1 | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'")
+
+START_SCRIPT="#!/bin/bash
+
+if [ \$# -ne 2 ]; then
+    echo \"$START_SCRIPT_NAME [IP] [SMTP_PORT]\"
+    exit 1
+fi
+
+mailcatcher --ip=\$1 --smtp-port \$2
+"
+
+BOOTUP_SCRIPT="#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          $BOOTUP_SCRIPT_NAME
+# Required-Start:    \$remote_fs \$syslog
+# Required-Stop:     \$remote_fs \$syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+${SCRIPT_PATH}/$START_SCRIPT_NAME $VAGRANT_IP $SMTP_PORT
+"
+# if mailcatcher is not installed, proceed with installation
+if [ ! -f "/usr/local/bin/mailcatcher" ]; then
+
+	# Install dependencies
+	sudo apt install -y build-essential libsqlite3-dev ruby-dev 2>/dev/null
+
+	# Install the gem
+	sudo gem install mailcatcher --no-ri --no-rdoc
+fi
+
+# if mailcatcher installation is failed, stop creating scripts
+if [ -f "/usr/local/bin/mailcatcher" ]; then
+
+	if [ ! -d $SCRIPT_PATH ]; then
+		mkdir "$SCRIPT_PATH" 2>/dev/null
+	fi
+
+	if [ -f $START_SCRIPT_PATH ]; then
+		rm -f "$START_SCRIPT_PATH"
+	fi
+
+	if [ -f "/etc/init.d/$BOOTUP_SCRIPT_NAME" ]; then
+		rm -f "$BOOTUP_SCRIPT_PATH"
+		sudo rm -f "/etc/init.d/$BOOTUP_SCRIPT_NAME"
+	fi
+
+cat <<EOF > "$START_SCRIPT_PATH"
+$START_SCRIPT
+EOF
+
+cat <<EOF > "$BOOTUP_SCRIPT_PATH"
+$BOOTUP_SCRIPT
+EOF
+
+	chmod 755 $START_SCRIPT_PATH
+	sudo cp "$BOOTUP_SCRIPT_PATH" /etc/init.d
+	sudo chmod ugo+x "/etc/init.d/$BOOTUP_SCRIPT_NAME"
+	sudo update-rc.d "$BOOTUP_SCRIPT_NAME" defaults
+	sudo service "$BOOTUP_SCRIPT_NAME" start
+	echo -e "${GREEN}mailcatcher setup completed${NC}. See your emails at ${GREEN}http://${VAGRANT_IP}:1080${NC}"
+    exit 1
+
+else
+	echo -e "${RED}mailcatcher not installed${NC}"
+    exit 0
+fi

@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+source $(dirname "$0")/../lib.sh
+
+if [ ! -f $(dirname "$0")/../$CONFIG_FILE ]; then
+    echo -e "${RED}Config file not found.${NC} run 'cp config.sample config' to create one"
+    exit 0
+fi
+
+source $(dirname "$0")/../$CONFIG_FILE
+
+SCRIPT_NAME=$(basename "$0")
+
+if [ -z "$1" ]; then
+    echo "$SCRIPT_NAME [backup folder name]"
+    exit 1
+fi
+
+if [ ! -f $CREDENTIAL_PATH ]; then
+    echo -e "${RED}Can not find the credential file${NC} ($CREDENTIAL_PATH)"
+    exit 0
+fi
+
+if [ ! -d $BACKUP_PATH ]; then
+    echo -e "${RED}Backup directory doesn't exist${NC} Please map a backup folder in your Homestead.yaml ($BACKUP_PATH)"
+    exit 0
+fi
+
+# create an array with all the filer/dir inside ~/myDir
+arr=($BACKUP_PATH/$1/*)
+
+for f in "${arr[@]}"; do
+	FILE_NAME=$(basename "$f")
+	DB_NAME="${FILE_NAME%.*}"
+
+	echo -e "Restoring ${GREEN}$DB_NAME${NC} from ${GREEN}$BACKUP_PATH/$1/$FILE_NAME${NC}"
+	mysql --defaults-file="$CREDENTIAL_PATH" -e "DROP DATABASE IF EXISTS $DB_NAME"
+	zcat < "$BACKUP_PATH/$1/$FILE_NAME" | mysql --defaults-file="$CREDENTIAL_PATH"
+done
+
+echo "Done"

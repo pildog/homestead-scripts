@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+source $(dirname "$0")/../lib.sh
+
+if [ ! -f $(dirname "$0")/../$CONFIG_FILE ]; then
+    echo -e "${RED}Config file not found.${NC} run 'cp config.sample config' to create one"
+    exit 0
+fi
+
+source $(dirname "$0")/../$CONFIG_FILE
+
+SCRIPT_NAME=$(basename "$0")
+
+if [ $# -ne 2 ]; then
+    echo "$SCRIPT_NAME [ID] [Password]"
+    exit 1
+fi
+
+MY_CNF="[client]
+user=$1
+password=$2"
+
+cat <<EOF > "$CREDENTIAL_PATH"
+$MY_CNF
+EOF
+
+echo -e "${GREEN}mysql credential file has been created${NC} ($CREDENTIAL_PATH)"
+exit 1
