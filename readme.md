@@ -51,7 +51,16 @@ chmod 755 ~/bin/db/*
 chmod 755 ~/bin/mailcatcher/*
 ~~~
 
-##### 2.2.2. Creating database credential file
+##### 2.2.2. Creating config file for the scripts
+
+Run following command to copy from a sample.
+
+~~~
+cp ~/bin/config.sample ~/bin/config
+~~~
+
+
+##### 2.2.3. Creating database credential file
 
 Laravel Homestead default database username and password is 'homestead' and 'secret'. Use the following command to create a mysql credential file.
 
@@ -59,13 +68,6 @@ Laravel Homestead default database username and password is 'homestead' and 'sec
 ~/bin/db/create_cred homestead secret
 ~~~
 
-##### 2.2.3. Creating config file for the scripts
-
-Run following command to copy from a sample.
-
-~~~
-cp ~/bin/config.sample ~/bin/config
-~~~
 
 ##### 2.2.4. Modifying settings
 
@@ -143,3 +145,11 @@ mailcatcher setup completed. See your emails at http://192.168.10.10:1080
 ~~~
 
 You can type `http://192.168.10.10:1080` on your web browser to access Web GUI.
+
+#### 3.2.2.1 Network interface option
+
+If you want to point a different network interface. put the name of the interface after as an argument.
+
+~~~
+bin/mailcatcher/setup eth2
+~~~ 
