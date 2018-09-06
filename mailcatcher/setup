@@ -29,12 +29,12 @@ fi
 
 START_SCRIPT="#!/bin/bash
 
-if [ \$# -ne 2 ]; then
-    echo \"$START_SCRIPT_NAME [IP] [SMTP_PORT]\"
+if [ \$# -ne 3 ]; then
+    echo \"$START_SCRIPT_NAME [IP] [SMTP_PORT] [WEB_PORT]\"
     exit 1
 fi
 
-mailcatcher --ip=\$1 --smtp-port \$2
+mailcatcher --ip=\$1 --smtp-port \$2 --http-port \$3
 "
 
 BOOTUP_SCRIPT="#!/bin/sh
@@ -49,7 +49,7 @@ BOOTUP_SCRIPT="#!/bin/sh
 # Description:       Enable service provided by daemon.
 ### END INIT INFO
 
-${SCRIPT_PATH}/$START_SCRIPT_NAME $VAGRANT_IP $SMTP_PORT
+${SCRIPT_PATH}/$START_SCRIPT_NAME $VAGRANT_IP $SMTP_PORT $WEB_PORT
 "
 # if mailcatcher is not installed, proceed with installation
 if [ ! -f "/usr/local/bin/mailcatcher" ]; then

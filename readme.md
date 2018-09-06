@@ -87,6 +87,9 @@ BACKUP_PATH="/home/vagrant/backup"
 # mailcatcher smtp port
 SMTP_PORT="9999"
 
+# mailcatcher web port
+WEB_PORT="1080"
+
 # Defines the folder where the mailcatcher startup script will be saved
 SCRIPT_PATH="/home/vagrant/mailcatcher"
 ~~~
