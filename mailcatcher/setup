@@ -64,17 +64,17 @@ fi
 # if mailcatcher installation is failed, stop creating scripts
 if [ -f "/usr/local/bin/mailcatcher" ]; then
 
-	if [ ! -d $SCRIPT_PATH ]; then
-		mkdir "$SCRIPT_PATH" 2>/dev/null
-	fi
-
 	if [ -f $START_SCRIPT_PATH ]; then
-		rm -f "$START_SCRIPT_PATH"
+		rm -rf "$START_SCRIPT_PATH"
 	fi
 
 	if [ -f "/etc/init.d/$BOOTUP_SCRIPT_NAME" ]; then
-		rm -f "$BOOTUP_SCRIPT_PATH"
+		rm -rf "$BOOTUP_SCRIPT_PATH"
 		sudo rm -f "/etc/init.d/$BOOTUP_SCRIPT_NAME"
+	fi
+
+	if [ ! -d $SCRIPT_PATH ]; then
+		mkdir "$SCRIPT_PATH" 2>/dev/null
 	fi
 
 cat <<EOF > "$START_SCRIPT_PATH"
