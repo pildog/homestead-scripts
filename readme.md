@@ -120,7 +120,7 @@ Running the script will create a folder and back up all databases inside.
 Passing a folder name as a parameter will restore all databases inside of the folder.
 
 ~~~
-~/bin/db/backup_all [YYYY-MM-DD-HH-MM-SS]
+~/bin/db/restore_all [YYYY-MM-DD-HH-MM-SS]
 ~~~
 
 
