@@ -59,17 +59,7 @@ Run following command to copy from a sample.
 cp ~/bin/config.sample ~/bin/config
 ~~~
 
-
-##### 2.2.3. Creating database credential file
-
-Laravel Homestead default database username and password is 'homestead' and 'secret'. Use the following command to create a mysql credential file.
-
-~~~
-~/bin/db/create_cred homestead secret
-~~~
-
-
-##### 2.2.4. Modifying settings
+##### 2.2.3. Modifying settings
 
 Change path if nesseccary.
 
@@ -92,6 +82,20 @@ WEB_PORT="1080"
 
 # Defines the folder where the mailcatcher startup script will be saved
 SCRIPT_PATH="/home/vagrant/mailcatcher"
+
+# mailcatcher bin folder location 
+BIN_PATH="/usr/local/bin"
+
+# default ethernet intergace
+INTERFACE="eth1"
+~~~
+
+##### 2.2.4. Creating database credential file
+
+Laravel Homestead default database username and password is 'homestead' and 'secret'. Use the following command to create a mysql credential file.
+
+~~~
+~/bin/db/create_cred homestead secret
 ~~~
 
 ---
@@ -138,6 +142,10 @@ This script will look for the given SQL script file from your backup folder. If 
 
 `~/bin/mailcatcher/setup` Mailcatcher setup scripts
 
+`~/bin/mailcatcher/start` Start mailcatcher manually (for MacOS)
+
+`~/bin/mailcatcher/stop` Stop mailcatcher manually
+
 #### 3.2.2. Mailcatcher
 
 Mailcatcher is a fake SMTP program that catch all outgoing e-mails instead of actually delivering to recipients. After thed script finishes installation, it will give you URL to access via Web UI.
@@ -155,4 +163,4 @@ If you want to point a different network interface. put the name of the interfac
 
 ~~~
 bin/mailcatcher/setup eth2
-~~~ 
+~~~

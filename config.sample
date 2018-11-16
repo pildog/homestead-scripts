@@ -14,3 +14,9 @@ WEB_PORT="1080"
 
 # Defines the folder where the mailcatcher startup script will be saved
 SCRIPT_PATH="/home/vagrant/mailcatcher"
+
+# mailcatcher bin folder location 
+BIN_PATH="/usr/local/bin"
+
+# default ethernet intergace
+INTERFACE="eth1"

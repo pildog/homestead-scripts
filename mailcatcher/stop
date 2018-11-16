@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+source $(dirname "$0")/../lib.sh
+
+if [ ! -f $(dirname "$0")/../$CONFIG_FILE ]; then
+    echo -e "${RED}Config file not found.${NC} run 'cp config.sample config' to create one"
+    exit 0
+fi
+
+source $(dirname "$0")/../$CONFIG_FILE
+
+# if mailcatcher is already installed, start creating scripts
+if [ -f "$BIN_PATH/mailcatcher" ]; then
+    pid=$(lsof -i:$WEB_PORT -t); kill -TERM $pid || kill -KILL $pid
+    echo -e "${GREEN}mailcatcher service has stopped${NC}"
+else
+	echo -e "${RED}mailcatcher not installed${NC}"
+    exit 0
+fi
+
+exit 1

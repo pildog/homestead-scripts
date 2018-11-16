@@ -15,11 +15,17 @@ BOOTUP_SCRIPT_NAME="mailcatcher"
 START_SCRIPT_PATH="${SCRIPT_PATH}/$START_SCRIPT_NAME"
 BOOTUP_SCRIPT_PATH="${SCRIPT_PATH}/$BOOTUP_SCRIPT_NAME"
 
-if [ -z "$1" ]; then
-    INTERFACE="eth1"
-else
-	INTERFACE="$1"
+# if the default network interface is not defined, get it from the first argument
+if [ -z $INTERFACE ]; then
+	if [ ! -z "$1" ]; then
+		INTERFACE="eth1"
+	else
+		INTERFACE="$1"
+	fi
 fi
+
+# getting environmental strings
+unameOut="$(uname -s)"
 
 VAGRANT_IP=$(eval "ifconfig $INTERFACE | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1'")
 
@@ -34,7 +40,7 @@ if [ \$# -ne 3 ]; then
     exit 1
 fi
 
-mailcatcher --ip=\$1 --smtp-port \$2 --http-port \$3
+$BIN_PATH/mailcatcher --ip=\$1 --smtp-port \$2 --http-port \$3
 "
 
 BOOTUP_SCRIPT="#!/bin/sh
@@ -52,48 +58,73 @@ BOOTUP_SCRIPT="#!/bin/sh
 ${SCRIPT_PATH}/$START_SCRIPT_NAME $VAGRANT_IP $SMTP_PORT $WEB_PORT
 "
 # if mailcatcher is not installed, proceed with installation
-if [ ! -f "/usr/local/bin/mailcatcher" ]; then
+if [ ! -f "$BIN_PATH/mailcatcher" ]; then
 
-	# Install dependencies
-	sudo apt install -y build-essential libsqlite3-dev ruby-dev 2>/dev/null
+	# see what OS host is running
+	case "${unameOut}" in
+		Linux*)
+			# Install dependencies
+			sudo apt install -y build-essential libsqlite3-dev ruby-dev 2>/dev/null
+			# Install the gem
+			sudo gem install mailcatcher --no-ri --no-rdoc
+			;;
+		Darwin*)
+			echo -e "${GREEN}Enter password to authorize mailcather installation${NC}"
+			sudo gem install mailcatcher 2>/dev/null
+			;;
+		*)
+			echo -e "${RED}Not able to install mailcatcher on your OS${NC}"
+			exit 0
+			;;
+	esac
 
-	# Install the gem
-	sudo gem install mailcatcher --no-ri --no-rdoc
 fi
 
-# if mailcatcher installation is failed, stop creating scripts
-if [ -f "/usr/local/bin/mailcatcher" ]; then
+# if mailcatcher is already installed, start creating scripts
+if [ -f "$BIN_PATH/mailcatcher" ]; then
 
-	if [ -f $START_SCRIPT_PATH ]; then
-		rm -rf "$START_SCRIPT_PATH"
-	fi
+	# register mailcatcher start up script in linux
+	case "${unameOut}" in
+		Linux*)
+			# erase start-up scripts in linux
+			if [ -f $START_SCRIPT_PATH ]; then
+				rm -rf "$START_SCRIPT_PATH"
+			fi
 
-	if [ -f "/etc/init.d/$BOOTUP_SCRIPT_NAME" ]; then
-		rm -rf "$BOOTUP_SCRIPT_PATH"
-		sudo rm -f "/etc/init.d/$BOOTUP_SCRIPT_NAME"
-	fi
+			if [ -f "/etc/init.d/$BOOTUP_SCRIPT_NAME" ]; then
+				rm -rf "$BOOTUP_SCRIPT_PATH"
+				sudo rm -f "/etc/init.d/$BOOTUP_SCRIPT_NAME"
+			fi
+			
+			if [ ! -d $SCRIPT_PATH ]; then
+				mkdir "$SCRIPT_PATH" 2>/dev/null
+			fi
 
-	if [ ! -d $SCRIPT_PATH ]; then
-		mkdir "$SCRIPT_PATH" 2>/dev/null
-	fi
-
-cat <<EOF > "$START_SCRIPT_PATH"
+			cat <<EOF > "$START_SCRIPT_PATH"
 $START_SCRIPT
 EOF
 
-cat <<EOF > "$BOOTUP_SCRIPT_PATH"
+			cat <<EOF > "$BOOTUP_SCRIPT_PATH"
 $BOOTUP_SCRIPT
 EOF
+			chmod 755 $START_SCRIPT_PATH
+			sudo cp "$BOOTUP_SCRIPT_PATH" /etc/init.d
+			sudo chmod ugo+x "/etc/init.d/$BOOTUP_SCRIPT_NAME"
+			sudo update-rc.d "$BOOTUP_SCRIPT_NAME" defaults
+			sudo service "$BOOTUP_SCRIPT_NAME" start
 
-	chmod 755 $START_SCRIPT_PATH
-	sudo cp "$BOOTUP_SCRIPT_PATH" /etc/init.d
-	sudo chmod ugo+x "/etc/init.d/$BOOTUP_SCRIPT_NAME"
-	sudo update-rc.d "$BOOTUP_SCRIPT_NAME" defaults
-	sudo service "$BOOTUP_SCRIPT_NAME" start
-	echo -e "${GREEN}mailcatcher setup completed${NC}. See your emails at ${GREEN}http://${VAGRANT_IP}:1080${NC}"
-    exit 1
+			echo -e "${GREEN}mailcatcher setup completed${NC}. See your emails at ${GREEN}http://${VAGRANT_IP}:1080${NC}"
+			;;
+		Darwin*)
+			$BIN_PATH/mailcatcher --ip=$VAGRANT_IP --smtp-port $SMTP_PORT --http-port $WEB_PORT
+			;;
+		*)
+			;;
+	esac
 
 else
 	echo -e "${RED}mailcatcher not installed${NC}"
     exit 0
 fi
+
+exit 1
