@@ -1,29 +1,9 @@
 ## Useful shell scripts for Laravel/Homestead
 
 
-### 1. Installation
+### 1. Creating a backup folder
 
-~~~
-git clone https://pildog@github.com/pildog/homestead-scripts.git ~/homestead-scripts
-~~~
-
-Create a mapping in `Homestead.yaml` file
-
-~~~
-folders:
-	
-	# change to your path
-	- map: ~/homestead-scripts
-      to: /home/vagrant/bin
-~~~
-
----
-
-### 2. Before you use the scripts
-
-#### 2.1. Creating a backup folder
-
-Create backup folder mapping in `Homestead.yaml` file
+Create database backup folder mapping in `Homestead.yaml` file
 
 ~~~
 folders:
@@ -40,18 +20,24 @@ vagrant halt
 vagrant up
 ~~~
 
-#### 2.2. Configuring settings
+### 2. Installation
 
 Once your vagrant has finished loading, type `vagrant ssh` to connect to your host.
 
-##### 2.2.1. Change permissions
+After you connected to your host. Run following command to install the scripts
+
+~~~
+git clone https://pildog@github.com/pildog/homestead-scripts.git ~/bin
+~~~
+
+#### 2.1. Change permissions
 
 ~~~
 chmod 755 ~/bin/db/*
 chmod 755 ~/bin/mailcatcher/*
 ~~~
 
-##### 2.2.2. Creating config file for the scripts
+#### 2.2. Creating config file for the scripts
 
 Run following command to copy from a sample.
 
@@ -59,7 +45,7 @@ Run following command to copy from a sample.
 cp ~/bin/config.sample ~/bin/config
 ~~~
 
-##### 2.2.3. Modifying settings
+#### 2.3. Modifying settings
 
 Change path if nesseccary.
 
@@ -90,7 +76,7 @@ BIN_PATH="/usr/local/bin"
 INTERFACE="eth1"
 ~~~
 
-##### 2.2.4. Creating database credential file
+#### 2.4. Creating database credential file
 
 Laravel Homestead default database username and password is 'homestead' and 'secret'. Use the following command to create a mysql credential file.
 
@@ -130,7 +116,7 @@ Passing a folder name as a parameter will restore all databases inside of the fo
 
 #### 3.1.4 Import
 
-This script will look for the given SQL script file from your backup folder. If the database doesn't exist, it will create one.
+This script will run the given SQL script to the target database. If the database doesn't exist, it will create one. However, if the target database already exists, script will do no further action.
 
 ~~~
 ~/bin/db/import [SQL script filename] [database name]
