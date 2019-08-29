@@ -31,7 +31,7 @@ fi
 
 for db in $databases; do
 	BACKUP_FILE="$BACKUP_FOLDER/${db}.gz"
-	mysqldump --defaults-file="$CREDENTIAL_PATH" --databases $db | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | sed -e 's/DEFINER[ ]*=[ ]*[^*]*PROCEDURE/PROCEDURE/' | sed -e 's/DEFINER[ ]*=[ ]*[^*]*FUNCTION/FUNCTION/' | gzip > "$BACKUP_FILE"
+	mysqldump --defaults-file="$CREDENTIAL_PATH" -n --databases $db | sed -e 's/DEFINER[ ]*=[ ]*[^*]*\*/\*/' | sed -e 's/DEFINER[ ]*=[ ]*[^*]*PROCEDURE/PROCEDURE/' | sed -e 's/DEFINER[ ]*=[ ]*[^*]*FUNCTION/FUNCTION/' | sed -e '/USE `'"${db}"'`;/d' | gzip > "$BACKUP_FILE"
 	echo -e "${GREEN}$BACKUP_FILE${NC}"
 done
 

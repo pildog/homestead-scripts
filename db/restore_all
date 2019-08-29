@@ -35,7 +35,8 @@ for f in "${arr[@]}"; do
 
 	echo -e "Restoring ${GREEN}$DB_NAME${NC} from ${GREEN}$BACKUP_PATH/$1/$FILE_NAME${NC}"
 	mysql --defaults-file="$CREDENTIAL_PATH" -e "DROP DATABASE IF EXISTS $DB_NAME"
-	zcat < "$BACKUP_PATH/$1/$FILE_NAME" | mysql --defaults-file="$CREDENTIAL_PATH"
+    mysql --defaults-file="$CREDENTIAL_PATH" -e "CREATE DATABASE $DB_NAME DEFAULT CHARACTER SET utf8 COLLATE utf8_unicode_ci"
+	zcat < "$BACKUP_PATH/$1/$FILE_NAME" | mysql --defaults-file="$CREDENTIAL_PATH" "$DB_NAME"
 done
 
 echo "Done"
